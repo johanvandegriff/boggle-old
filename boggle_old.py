@@ -10,7 +10,7 @@ VIEW_GAME = 3
 PLAY_GAME = 4
 GAME_OVER = 5
 
-ROOT_DIR = "/srv/boggle_old"
+ROOT_DIR = "/srv"
 GAMES_FILE = os.path.join(ROOT_DIR, "games.json")
 GAME_DURATION = 3 * 60 * 1000 #3 minutes in milliseconds
 formMethod = "get"
@@ -145,7 +145,7 @@ def solve(game, minWordLength):
 
     words = [] #the list of possible words
 
-    for line in open(ROOT_DIR + "/lists/list.txt", 'r'): #sort through each word
+    for line in open(ROOT_DIR + "/list.txt", 'r'): #sort through each word
         line = line.strip() #remove the newline
         if len(line) >= minWordLength: #if the word is long enough
             #if the word does not have too many of any letter
@@ -186,7 +186,12 @@ def table(rows, properties, head=True):
 
 def page(form):
     text = ""
-    games = json.load(open(GAMES_FILE, 'r'))
+
+    games = []
+    if os.path.exists(GAMES_FILE):
+        games = json.load(open(GAMES_FILE, 'r'))
+    else:
+        json.dump(games, open(GAMES_FILE, 'w'))
 
     if "action" in form:
         action = int(form["action"])
