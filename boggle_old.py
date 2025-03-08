@@ -3,6 +3,11 @@ from wsgiref.simple_server import make_server, demo_app
 
 import sys, json, datetime, re, os, time, decimal, subprocess, random
 
+PREFIX = os.environ.get('PREFIX', '') #e.g. /boggle-old
+ROOT_DIR = os.environ.get('ROOT_DIR', '/srv')
+GAMES_FILE = os.path.join(ROOT_DIR, "games.json")
+GAME_DURATION = 3 * 60 * 1000 #3 minutes in milliseconds
+
 LOGIN = 0
 LOBBY = 1
 JOIN_GAME = 2
@@ -10,16 +15,14 @@ VIEW_GAME = 3
 PLAY_GAME = 4
 GAME_OVER = 5
 
-ROOT_DIR = "/srv"
-GAMES_FILE = os.path.join(ROOT_DIR, "games.json")
-GAME_DURATION = 3 * 60 * 1000 #3 minutes in milliseconds
 formMethod = "get"
 
 def header():
-    return '''<!DOCTYPE html>
+    return f'''<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="{PREFIX}/static/favicon.ico" type="image/x-icon">
 <title>boggle</title>
 </head>
 <body>
@@ -432,17 +435,17 @@ def page(form):
 
         board = myGame[5]
         text += display(board, 1)
-        text += """<form action="" id="words" name="words">
-<input type="hidden" name="action" value='""" + str(GAME_OVER) + """'>
-<input type="hidden" name="username" value='""" + username + """'>
-<input type="hidden" name="size" value='""" + size + """'>
-<input type="hidden" name="gameID" value='""" + str(myGameID) + """'>
+        text += f"""<form action="" id="words" name="words">
+<input type="hidden" name="action" value="{GAME_OVER}">
+<input type="hidden" name="username" value="{username}">
+<input type="hidden" name="size" value="{size}">
+<input type="hidden" name="gameID" value="{myGameID}">
 
 <h1><table cellpadding=13 cellspacing=3>
-<tr><td background="/static/space.bmp">
+<tr><td background="{PREFIX}/static/space.bmp">
 <a style="text-decoration:none;color:#000000" href="javascript:type(' ')">
 Space</a></td>
-<td background="/static/backspace.bmp">
+<td background="{PREFIX}/static/backspace.bmp">
 <a style="text-decoration:none;color:#000000" href="javascript:backspace()">
 Backspace</a></td></tr></table></h1>
 
@@ -535,7 +538,7 @@ Redirect in 5 seconds...
     if action == LOBBY:
         lobbyStartTime = time.time()
         text += header()
-        text += '<script type="text/javascript" src="/static/sorttable.js"></script>'
+        text += f'<script type="text/javascript" src="{PREFIX}/static/sorttable.js"></script>'
 
         text += '<h1>Boggle Lobby</h1>'
         text += '<p>Welcome, ' + username + '!'
@@ -667,7 +670,7 @@ def display(board, buttons):
                 space = "&nbsp;"
             if buttons == 1:
                 letter = '<a style="text-decoration:none;color:#000000" href="javascript:type(\'' + letter.lower() + '\')">' + letter + '</a>'
-            text += '<td width="62" height="62" background="/static/letter.bmp">&thinsp;' + space + letter + "</td>"
+            text += f'<td width="62" height="62" background="{PREFIX}/static/letter.bmp">&thinsp;' + space + letter + "</td>"
         text += "</tr>"
     text += "</table></font></h1>"
     return text
@@ -719,7 +722,7 @@ def boggle_server(environ, start_response):
     params = parse_qs(environ['QUERY_STRING'])
     paramsFirstOnly = {k: v[0] for k, v in params.items()} #only use the first instance of each param
     path = environ['PATH_INFO']
-    if path == '/':
+    if path == PREFIX + '/':
         try:
             response = page(paramsFirstOnly).encode()
             status = '200 OK'
@@ -727,9 +730,9 @@ def boggle_server(environ, start_response):
             print('error', e)
             response = b'<h1>500 Internal Server Error</h1>' + str(e).encode()
             status = '500 Internal Server Error'
-    elif path.startswith('/static') or path == '/favicon.ico':
+    elif path.startswith(PREFIX + '/static') and not '..' in path:
         try:
-            with open(path[1:], 'rb') as f:
+            with open(path[len(PREFIX+'/'):], 'rb') as f:
                 response = f.read()
                 status = '200 OK'
         except:
