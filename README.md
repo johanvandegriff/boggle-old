@@ -7,11 +7,13 @@
 ## Run It Yourself
 
 ```bash
-mkdir -p /srv/boggle-old
+mkdir -p ~/boggle-old-data
 ```
 
-Search online for the scrabble dictionary of words in txt format (1 word per line, nothing extra), and download the file to `/srv/boggle-old/list.txt`.
+Search online for the scrabble dictionary of words in txt format (1 word per line, nothing extra), and download the file to `~/boggle-old-data/list.txt`.
 
 ```bash
-docker run -p 8080:8080 -v /srv/boggle-old/:/srv/ johanvandegriff/boggle-old:build2
+docker run -p 8080:8080 -v ~/boggle-old-data/:/srv/ johanvandegriff/boggle-old:build4
 ```
+
+Then visit [http://localhost:8080/](http://localhost:8080/) to play boggle.
