@@ -722,6 +722,9 @@ def boggle_server(environ, start_response):
     params = parse_qs(environ['QUERY_STRING'])
     paramsFirstOnly = {k: v[0] for k, v in params.items()} #only use the first instance of each param
     path = environ['PATH_INFO']
+    headers = [('Content-type', 'text/html')]
+    response = b'<h1>404 Not Found</h1>'
+    status = '404 Not Found'
     if path == PREFIX + '/' or path == PREFIX:
         try:
             response = page(paramsFirstOnly).encode()
@@ -735,15 +738,13 @@ def boggle_server(environ, start_response):
             with open(path[len(PREFIX+'/'):], 'rb') as f:
                 response = f.read()
                 status = '200 OK'
+                headers = []
         except:
             response = b'<h1>404 Not Found</h1>'
             status = '404 Not Found'
-    else:
-        response = b'<h1>404 Not Found</h1>'
-        status = '404 Not Found'
-    headers = [('Content-type', 'text/html')]
 
-    print(f'{status=} for {path=} and {params=}')
+    print(f'{status=} for {path=} and {params=} -> {len(response)=}')
+
     start_response(status, headers)
 
     return [response]
