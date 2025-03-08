@@ -722,7 +722,7 @@ def boggle_server(environ, start_response):
     params = parse_qs(environ['QUERY_STRING'])
     paramsFirstOnly = {k: v[0] for k, v in params.items()} #only use the first instance of each param
     path = environ['PATH_INFO']
-    if path == PREFIX + '/':
+    if path == PREFIX + '/' or path == PREFIX:
         try:
             response = page(paramsFirstOnly).encode()
             status = '200 OK'
